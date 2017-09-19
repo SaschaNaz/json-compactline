@@ -1,0 +1,23 @@
+{
+  "name": "json-compactline",
+  "version": "1.0.0",
+  "description": "More compact but still diff-managable stringification ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaschaNaz/json-compactline.git"
+  },
+  "keywords": [
+    "json",
+    "stringifier"
+  ],
+  "author": "Kagami Sascha Rosylight <saschanaz@outlook.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SaschaNaz/json-compactline/issues"
+  },
+  "homepage": "https://github.com/SaschaNaz/json-compactline#readme"
+}

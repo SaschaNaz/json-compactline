@@ -1,6 +1,6 @@
 {
   "name": "json-compactline",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "More compact but still diff-managable stringification ",
   "main": "index.js",
   "scripts": {

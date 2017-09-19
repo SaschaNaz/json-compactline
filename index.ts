@@ -83,7 +83,16 @@ function stringifyObject(obj: any, indent: number) {
 }
 
 function isComplex(member: any) {
-    return member && (Array.isArray(member) || typeof member === "object");
+    if (!member) {
+        return false;
+    }
+    if (Array.isArray(member)) {
+        return member.length > 0
+    }
+    if (typeof member === "object") {
+        return [...Object.keys(member)].length > 0;
+    }
+    return false;
 }
 
 function insertSeparator(bodystrs: string[], previousResult: { complex: boolean }, currentItemIsComplex: boolean) {

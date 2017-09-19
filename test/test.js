@@ -14,6 +14,9 @@ describe("single objects", () => {
     it('should be "{}"', () => {
         chai.expect(stringify({})).to.equal("{}");
     });
+    it('should be "[]"', () => {
+        chai.expect(stringify([])).to.equal("[]");
+    });
 });
 
 describe("complex hierarchy", () => {
@@ -22,28 +25,29 @@ describe("complex hierarchy", () => {
         chai.expect(stringify([1, 2, 3])).to.equal("[1, 2, 3]");
     })
     it('should be multi-lined when one of members is complex', () => {
-        chai.expect(stringify([3, []])).to.equal("[\n  3,\n  []\n]");
+        chai.expect(stringify([3, [3]])).to.equal("[\n  3,\n  [3]\n]");
     });
     it('should not indent when all members are complex', () => {
-        chai.expect(stringify([[],[]])).to.equal("[[],\n[]]");
+        chai.expect(stringify([[1],[2]])).to.equal("[[1],\n[2]]");
     })
     it('should keep order in array', () => {
-        chai.expect(stringify([1, 2, [], 3, [4], 5])).to.equal(`[
-  1, 2,
-  [],
-  3,
+        chai.expect(stringify([1, 2, [], 3, [4], 5, {}])).to.equal(`[
+  1, 2, [], 3,
   [4],
-  5
+  5, {}
 ]`);
     });
     it('should collect simple members in non-primitive object', () => {
-        chai.expect(stringify({ a: [], b: 3, c: 3, d: [1, 2, 3, {}] })).to.equal(`{
+        chai.expect(stringify({ a: [3], b: 3, c: 3, d: [[], 1, 2, 3, { c: [] }] })).to.equal(`{
   "b": 3, "c": 3,
-  "a": [],
+  "a": [3],
   "d": [
-    1, 2, 3,
-    {}
+    [], 1, 2, 3,
+    { "c": [] }
   ]
 }`);
+    });
+    it("should treat empty arrays and objects as simple objects", () => {
+        chai.expect(stringify([[], {}])).to.equal("[[], {}]");
     });
 });

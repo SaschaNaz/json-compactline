@@ -74,7 +74,16 @@ function stringifyObject(obj, indent) {
     }
 }
 function isComplex(member) {
-    return member && (Array.isArray(member) || typeof member === "object");
+    if (!member) {
+        return false;
+    }
+    if (Array.isArray(member)) {
+        return member.length > 0;
+    }
+    if (typeof member === "object") {
+        return [...Object.keys(member)].length > 0;
+    }
+    return false;
 }
 function insertSeparator(bodystrs, previousResult, currentItemIsComplex) {
     if (!previousResult) {

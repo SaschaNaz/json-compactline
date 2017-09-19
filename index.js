@@ -18,6 +18,7 @@ function stringifyMember(obj, indent) {
 }
 function stringifyArray(array, indent) {
     const bodystrs = [];
+    let hasSimpleItem = false;
     let hasComplexItem = false;
     let previousResult;
     // Insert linebreak after opening bracket only if there is a complex item
@@ -27,15 +28,18 @@ function stringifyArray(array, indent) {
         if (result.complex) {
             hasComplexItem = true;
         }
+        else {
+            hasSimpleItem = true;
+        }
         insertSeparator(bodystrs, previousResult, result.complex);
         bodystrs.push(result.string);
         previousResult = result;
     }
-    if (hasComplexItem) {
-        return `[\n${indentLines(bodystrs.join(''), indent)}\n]`;
+    if (!hasComplexItem || !hasSimpleItem) {
+        return `[${bodystrs.join('')}]`;
     }
     else {
-        return `[${bodystrs.join('')}]`;
+        return `[\n${indentLines(bodystrs.join(''), indent)}\n]`;
     }
 }
 function stringifyObject(obj, indent) {

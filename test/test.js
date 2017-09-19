@@ -22,8 +22,11 @@ describe("complex hierarchy", () => {
         chai.expect(stringify([1, 2, 3])).to.equal("[1, 2, 3]");
     })
     it('should be multi-lined when one of members is complex', () => {
-        chai.expect(stringify([[]])).to.equal("[\n  []\n]");
+        chai.expect(stringify([3, []])).to.equal("[\n  3,\n  []\n]");
     });
+    it('should not indent when all members are complex', () => {
+        chai.expect(stringify([[],[]])).to.equal("[[],\n[]]");
+    })
     it('should keep order in array', () => {
         chai.expect(stringify([1, 2, [], 3, [4], 5])).to.equal(`[
   1, 2,

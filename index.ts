@@ -18,6 +18,7 @@ function stringifyMember(obj: any, indent: number) {
 
 function stringifyArray(array: Array<any>, indent: number) {
     const bodystrs: string[] = [];
+    let hasSimpleItem = false;
     let hasComplexItem = false;
     let previousResult: { complex: boolean };
 
@@ -28,17 +29,20 @@ function stringifyArray(array: Array<any>, indent: number) {
         if (result.complex) {
             hasComplexItem = true;
         }
+        else {
+            hasSimpleItem = true;
+        }
         insertSeparator(bodystrs, previousResult, result.complex);
         bodystrs.push(result.string);
 
         previousResult = result;
     }
 
-    if (hasComplexItem) {
-        return `[\n${indentLines(bodystrs.join(''), indent)}\n]`;
+    if (!hasComplexItem || !hasSimpleItem) {
+        return `[${bodystrs.join('')}]`;
     }
     else {
-        return `[${bodystrs.join('')}]`;
+        return `[\n${indentLines(bodystrs.join(''), indent)}\n]`;
     }
 }
 

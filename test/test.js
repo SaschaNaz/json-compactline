@@ -18,7 +18,7 @@ describe("single objects", () => {
 
 describe("complex hierarchy", () => {
     it("should be single-lined when members are all simple", () => {
-        chai.expect(stringify({ a: 3 })).to.equal("{ a: 3 }");
+        chai.expect(stringify({ a: 3 })).to.equal('{ "a": 3 }');
         chai.expect(stringify([1, 2, 3])).to.equal("[1, 2, 3]");
     })
     it('should be multi-lined when one of members is complex', () => {
@@ -35,9 +35,9 @@ describe("complex hierarchy", () => {
     });
     it('should collect simple members in non-primitive object', () => {
         chai.expect(stringify({ a: [], b: 3, c: 3, d: [1, 2, 3, {}] })).to.equal(`{
-  b: 3, c: 3,
-  a: [],
-  d: [
+  "b": 3, "c": 3,
+  "a": [],
+  "d": [
     1, 2, 3,
     {}
   ]

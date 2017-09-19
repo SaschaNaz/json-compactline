@@ -51,12 +51,12 @@ function stringifyObject(obj, indent) {
     }
     for (const entry of simpleMembers) {
         insertSeparator(bodystrs, previousResult, false);
-        bodystrs.push(`${entry[0]}: ${entry[1]}`);
+        bodystrs.push(`"${entry[0]}": ${entry[1]}`);
         previousResult = { complex: false };
     }
     for (const entry of complexMembers) {
         insertSeparator(bodystrs, previousResult, true);
-        bodystrs.push(`${entry[0]}: ${entry[1]}`);
+        bodystrs.push(`"${entry[0]}": ${entry[1]}`);
         previousResult = { complex: true };
     }
     if (!simpleMembers.size && !complexMembers.size) {

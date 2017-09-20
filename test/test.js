@@ -51,3 +51,12 @@ describe("complex hierarchy", () => {
         chai.expect(stringify([[], {}])).to.equal("[[], {}]");
     });
 });
+
+describe("process undefined correctly", () => {
+    it("should be converted to null on arrays", () => {
+        chai.expect(stringify([undefined, 3])).to.equal("[null, 3]");
+    });
+    it("should not appear as an object member", () => {
+        chai.expect(stringify({ a: undefined, b: 3 })).to.equal('{ "b": 3 }');
+    });
+});

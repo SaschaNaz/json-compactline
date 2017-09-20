@@ -25,6 +25,9 @@ function stringifyArray(array, indent) {
     // DO NOT REORDER on array
     for (const item of array) {
         const result = stringifyMember(item, indent);
+        if (result.string === undefined) {
+            result.string = "null";
+        }
         if (result.complex) {
             hasComplexItem = true;
         }
@@ -51,7 +54,9 @@ function stringifyObject(obj, indent) {
     // Fields can be reordered
     for (const field in obj) {
         const result = stringifyMember(obj[field], indent);
-        (result.complex ? complexMembers : simpleMembers).set(field, result.string);
+        if (result.string !== undefined) {
+            (result.complex ? complexMembers : simpleMembers).set(field, result.string);
+        }
     }
     for (const entry of simpleMembers) {
         insertSeparator(bodystrs, previousResult, false);

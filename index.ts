@@ -45,7 +45,7 @@ function stringifyArray(array: Array<any>, indent: number) {
         previousResultWasSingleLineComplex = isCurrentItemSingleLineComplex;
     }
 
-    if (!hasSingleLineComplexItem) {
+    if (!hasSingleLineComplexItem || bodystrs.length <= 1) {
         return `[${bodystrs.join('')}]`;
     }
     else {

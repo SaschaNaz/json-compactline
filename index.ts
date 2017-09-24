@@ -2,7 +2,12 @@ export default function stringify(obj: any, indent = 2) {
     return stringifyMember(obj, indent).string;
 }
 
-function stringifyMember(obj: any, indent: number) {
+interface Member {
+    complex: boolean;
+    string: string;
+}
+
+function stringifyMember(obj: any, indent: number): Member {
     if (!isComplex(obj)) {
         return {
             complex: false,
@@ -18,9 +23,9 @@ function stringifyMember(obj: any, indent: number) {
 
 function stringifyArray(array: Array<any>, indent: number) {
     const bodystrs: string[] = [];
-    let hasSimpleItem = false;
-    let hasComplexItem = false;
-    let previousResult: { complex: boolean };
+    let hasSingleLineComplexItem = false;
+    let previousResult: Member;
+    let previousResultWasSingleLineComplex = false;
 
     // Insert linebreak after opening bracket only if there is a complex item
     // DO NOT REORDER on array
@@ -29,50 +34,67 @@ function stringifyArray(array: Array<any>, indent: number) {
         if (result.string === undefined) {
             result.string = "null";
         }
-        if (result.complex) {
-            hasComplexItem = true;
+        const isCurrentItemSingleLineComplex = isSingleLineComplex(result);
+        if (isCurrentItemSingleLineComplex) {
+            hasSingleLineComplexItem = true;
         }
-        else {
-            hasSimpleItem = true;
-        }
-        insertSeparator(bodystrs, previousResult, result.complex);
+        insertSeparator(isCurrentItemSingleLineComplex);
         bodystrs.push(result.string);
 
         previousResult = result;
+        previousResultWasSingleLineComplex = isCurrentItemSingleLineComplex;
     }
 
-    if (!hasComplexItem || !hasSimpleItem) {
+    if (!hasSingleLineComplexItem) {
         return `[${bodystrs.join('')}]`;
     }
     else {
         return `[\n${indentLines(bodystrs.join(''), indent)}\n]`;
     }
+    
+    function insertSeparator(isCurrentItemSingleLineComplex: boolean) {
+        if (!previousResult) {
+            return;
+        }
+
+        // insert linebreak only when current item is single-line complex one
+        if (isCurrentItemSingleLineComplex || previousResultWasSingleLineComplex) {
+            bodystrs.push(",\n");
+        }
+        else {
+            bodystrs.push(", ");
+        }
+    }
+
+    function isSingleLineComplex(item: Member) {
+        return item.complex && !item.string.includes("\n")
+    }
 }
 
 function stringifyObject(obj: any, indent: number) {
     const bodystrs: string[] = [];
-    let previousResult: { complex: boolean };
+    let previousResult: Member;
 
-    const simpleMembers = new Map<string, string>();
-    const complexMembers = new Map<string, string>();
+    const simpleMembers = new Map<string, Member>();
+    const complexMembers = new Map<string, Member>();
 
     // Insert linebreak after opening bracket only if there is a complex item
     // Fields can be reordered
     for (const field in obj) {
         const result = stringifyMember(obj[field], indent);
         if (result.string !== undefined) {
-            (result.complex ? complexMembers : simpleMembers).set(field, result.string);
+            (result.complex ? complexMembers : simpleMembers).set(field, result);
         }
     }
     for (const entry of simpleMembers) {
-        insertSeparator(bodystrs, previousResult, false);
-        bodystrs.push(`"${entry[0]}": ${entry[1]}`);
-        previousResult = { complex: false };
+        insertSeparator(false);
+        bodystrs.push(`"${entry[0]}": ${entry[1].string}`);
+        previousResult = entry[1];
     }
     for (const entry of complexMembers) {
-        insertSeparator(bodystrs, previousResult, true);
-        bodystrs.push(`"${entry[0]}": ${entry[1]}`);
-        previousResult = { complex: true };
+        insertSeparator(true);
+        bodystrs.push(`"${entry[0]}": ${entry[1].string}`);
+        previousResult = entry[1];
     }
 
     if (!simpleMembers.size && !complexMembers.size) {
@@ -84,6 +106,20 @@ function stringifyObject(obj: any, indent: number) {
     }
     else {
         return `{ ${bodystrs.join('')} }`;
+    }
+    
+    function insertSeparator(currentItemIsComplex: boolean) {
+        if (!previousResult) {
+            return;
+        }
+
+        // insert inline comma only when two items are both simple
+        if (!previousResult.complex && !currentItemIsComplex) {
+            bodystrs.push(", ");
+        }
+        else {
+            bodystrs.push(",\n");
+        }
     }
 }
 
@@ -98,20 +134,6 @@ function isComplex(member: any) {
         return [...Object.keys(member)].length > 0;
     }
     return false;
-}
-
-function insertSeparator(bodystrs: string[], previousResult: { complex: boolean }, currentItemIsComplex: boolean) {
-    if (!previousResult) {
-        return;
-    }
-
-    // insert inline comma only when two items are both simple
-    if (!previousResult.complex && !currentItemIsComplex) {
-        bodystrs.push(", ");
-    }
-    else {
-        bodystrs.push(",\n");
-    }
 }
 
 function indentLines(text: string, indent: number) {

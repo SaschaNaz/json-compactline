@@ -18,9 +18,9 @@ function stringifyMember(obj, indent) {
 }
 function stringifyArray(array, indent) {
     const bodystrs = [];
-    let hasSimpleItem = false;
-    let hasComplexItem = false;
+    let hasSingleLineComplexItem = false;
     let previousResult;
+    let previousResultWasSingleLineComplex = false;
     // Insert linebreak after opening bracket only if there is a complex item
     // DO NOT REORDER on array
     for (const item of array) {
@@ -28,21 +28,35 @@ function stringifyArray(array, indent) {
         if (result.string === undefined) {
             result.string = "null";
         }
-        if (result.complex) {
-            hasComplexItem = true;
+        const isCurrentItemSingleLineComplex = isSingleLineComplex(result);
+        if (isCurrentItemSingleLineComplex) {
+            hasSingleLineComplexItem = true;
         }
-        else {
-            hasSimpleItem = true;
-        }
-        insertSeparator(bodystrs, previousResult, result.complex);
+        insertSeparator(isCurrentItemSingleLineComplex);
         bodystrs.push(result.string);
         previousResult = result;
+        previousResultWasSingleLineComplex = isCurrentItemSingleLineComplex;
     }
-    if (!hasComplexItem || !hasSimpleItem) {
+    if (!hasSingleLineComplexItem) {
         return `[${bodystrs.join('')}]`;
     }
     else {
         return `[\n${indentLines(bodystrs.join(''), indent)}\n]`;
+    }
+    function insertSeparator(isCurrentItemSingleLineComplex) {
+        if (!previousResult) {
+            return;
+        }
+        // insert linebreak only when current item is single-line complex one
+        if (isCurrentItemSingleLineComplex || previousResultWasSingleLineComplex) {
+            bodystrs.push(",\n");
+        }
+        else {
+            bodystrs.push(", ");
+        }
+    }
+    function isSingleLineComplex(item) {
+        return item.complex && !item.string.includes("\n");
     }
 }
 function stringifyObject(obj, indent) {
@@ -55,18 +69,18 @@ function stringifyObject(obj, indent) {
     for (const field in obj) {
         const result = stringifyMember(obj[field], indent);
         if (result.string !== undefined) {
-            (result.complex ? complexMembers : simpleMembers).set(field, result.string);
+            (result.complex ? complexMembers : simpleMembers).set(field, result);
         }
     }
     for (const entry of simpleMembers) {
-        insertSeparator(bodystrs, previousResult, false);
-        bodystrs.push(`"${entry[0]}": ${entry[1]}`);
-        previousResult = { complex: false };
+        insertSeparator(false);
+        bodystrs.push(`"${entry[0]}": ${entry[1].string}`);
+        previousResult = entry[1];
     }
     for (const entry of complexMembers) {
-        insertSeparator(bodystrs, previousResult, true);
-        bodystrs.push(`"${entry[0]}": ${entry[1]}`);
-        previousResult = { complex: true };
+        insertSeparator(true);
+        bodystrs.push(`"${entry[0]}": ${entry[1].string}`);
+        previousResult = entry[1];
     }
     if (!simpleMembers.size && !complexMembers.size) {
         return "{}";
@@ -76,6 +90,18 @@ function stringifyObject(obj, indent) {
     }
     else {
         return `{ ${bodystrs.join('')} }`;
+    }
+    function insertSeparator(currentItemIsComplex) {
+        if (!previousResult) {
+            return;
+        }
+        // insert inline comma only when two items are both simple
+        if (!previousResult.complex && !currentItemIsComplex) {
+            bodystrs.push(", ");
+        }
+        else {
+            bodystrs.push(",\n");
+        }
     }
 }
 function isComplex(member) {
@@ -89,18 +115,6 @@ function isComplex(member) {
         return [...Object.keys(member)].length > 0;
     }
     return false;
-}
-function insertSeparator(bodystrs, previousResult, currentItemIsComplex) {
-    if (!previousResult) {
-        return;
-    }
-    // insert inline comma only when two items are both simple
-    if (!previousResult.complex && !currentItemIsComplex) {
-        bodystrs.push(", ");
-    }
-    else {
-        bodystrs.push(",\n");
-    }
 }
 function indentLines(text, indent) {
     const lines = text.split("\n");
